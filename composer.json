@@ -22,7 +22,7 @@
             "email": "kbinfo4u@gmail.com"
         }
     ],
-    "minimum-stability": "stable",
+    "minimum-stability": "dev",
     "require": {
         "swiftmailer/swiftmailer": "^5.4"
     },
