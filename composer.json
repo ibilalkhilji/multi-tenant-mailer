@@ -1,0 +1,40 @@
+{
+    "name": "khaleejinfotech/multi-tenant-mailer",
+    "description": "The `MultiTenantMailer` is a powerful and flexible email-sending class designed for multi-tenant applications. It simplifies the process of\nconfiguring and sending emails while supporting multiple tenants with different settings.",
+    "homepage": "https://khaleejinfotech.com",
+    "keywords": [
+        "email",
+        "mail",
+        "mailer",
+        "khaleej infotech",
+        "multi tenant"
+    ],
+    "type": "library",
+    "autoload": {
+        "psr-4": {
+            "Khaleejinfotech\\MultiTenantMailer\\": "src/"
+        }
+    },
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Bilal Khilji",
+            "email": "kbinfo4u@gmail.com"
+        }
+    ],
+    "minimum-stability": "stable",
+    "require": {
+        "swiftmailer/swiftmailer": "^5.4"
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Khaleejinfotech\\MultiTenantMailer\\MultiTenantMailerServiceProvider"
+            ],
+            "aliases": {
+                "MultiTenantMailer": "Khaleejinfotech\\MultiTenantMailer\\Facades\\MultiTenantMailer",
+                "MultiTenantMailerSettings": "Khaleejinfotech\\MultiTenantMailer\\Facades\\MultiTenantMailerSettings"
+            }
+        }
+    }
+}
