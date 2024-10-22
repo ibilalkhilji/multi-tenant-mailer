@@ -1,6 +1,11 @@
 # Multi Tenant Mailer
 
 ![Multi Tenant Mailer](banner.png)
+![GitHub Issues or Pull Requests](https://img.shields.io/github/issues/ibilalkhilji/multi-tenant-mailer)
+![GitHub Tag](https://img.shields.io/github/v/tag/ibilalkhilji/multi-tenant-mailer?label=version)
+![GitHub contributors](https://img.shields.io/github/contributors/ibilalkhilji/multi-tenant-mailer)
+![GitHub Repo stars](https://img.shields.io/github/stars/ibilalkhilji/multi-tenant-mailer)
+
 
 The `MultiTenantMailer` is a powerful and flexible email-sending library designed for multi-tenant applications. It simplifies the process
 of configuring and sending emails while supporting multiple tenants with different settings.
