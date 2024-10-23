@@ -45,6 +45,7 @@ class MultiTenantMailer
     protected ?string $notificationSubject = null;
     protected ?string $subject = null;
     protected bool $shouldQueue = false;
+    protected ?array $streamOptions = null;
 
     public function __construct()
     {
@@ -353,6 +354,28 @@ class MultiTenantMailer
         return $this->shouldQueue;
     }
 
+    /**
+     * Get the stream options.
+     *
+     * @return array|null The stream options, or null if not set.
+     */
+    public function getStreamOptions(): ?array
+    {
+        return $this->streamOptions;
+    }
+
+    /**
+     * Set the stream options.
+     *
+     * @param array|null $streamOptions The stream options to set.
+     *
+     * @return MultiTenantMailer
+     */
+    public function setStreamOptions(?array $streamOptions): MultiTenantMailer
+    {
+        $this->streamOptions = $streamOptions;
+        return $this;
+    }
 
     /**
      * Sets the body of the email using a Notification or a string.
@@ -471,6 +494,8 @@ class MultiTenantMailer
         $transport->setUsername($this->getUsername());
         $transport->setPassword($this->getPassword());
         $transport->setEncryption($this->getEncryption());
+        if ($this->getStreamOptions() != null)
+            $transport->setStreamOptions($this->getStreamOptions());
         return $transport;
     }
 
