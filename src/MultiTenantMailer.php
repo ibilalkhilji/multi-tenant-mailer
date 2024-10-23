@@ -395,7 +395,13 @@ class MultiTenantMailer
     public function setBody(Mailable|Notification|string $body): MultiTenantMailer
     {
         if ($body instanceof Mailable) {
-            if($body->subject){
+            if (method_exists($body, 'getSubject') && $body->getSubject()) {
+                $this->notificationSubject = $body->getSubject();
+                $this->subject = $body->getSubject();
+            } else if (method_exists($body, 'envelope') && $body->envelope()?->subject) {
+                $this->notificationSubject = $body->envelope()->subject;
+                $this->subject = $body->envelope()->subject;
+            } elseif ($body->subject) {
                 $this->notificationSubject = $body->subject;
                 $this->subject = $body->subject;
             }
