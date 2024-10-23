@@ -4,12 +4,14 @@ namespace Khaleejinfotech\MultiTenantMailer;
 
 use Exception;
 use Illuminate\Contracts\Container\BindingResolutionException;
+use Illuminate\Mail\Mailable;
 use Illuminate\Mail\Markdown;
 use Illuminate\Notifications\Notification;
 use Khaleejinfotech\MultiTenantMailer\Contracts\MultiTenantMailerSettings;
 use Khaleejinfotech\MultiTenantMailer\Events\MailFailed;
 use Khaleejinfotech\MultiTenantMailer\Events\MailSuccess;
 use Khaleejinfotech\MultiTenantMailer\Exceptions\MultiTenantMailerException;
+use ReflectionException;
 use Swift_Attachment;
 use Swift_Mailer;
 use Swift_Message;
@@ -378,16 +380,30 @@ class MultiTenantMailer
     }
 
     /**
-     * Sets the body of the email using a Notification or a string.
+     * Sets the body of the email using a Notification, Mailable, or a string.
      *
-     * @param Notification|string $notification The notification instance or the email body content.
-     * @return MultiTenantMailer
-     * @throws BindingResolutionException If there is an issue resolving the notification instance.
+     * This method processes the provided body content and extracts necessary
+     * information like subject, attachments, and rendered content from the
+     * Notification or Mailable instance. If a plain string is provided, it
+     * sets that as the email body.
+     *
+     * @param Mailable|Notification|string $body The notification or mailable instance, or the email body content.
+     * @return MultiTenantMailer Returns the current instance for method chaining.
+     * @throws BindingResolutionException If there is an issue resolving the notification or mailable instance.
+     * @throws ReflectionException
      */
-    public function setBody(Notification|string $notification): MultiTenantMailer
+    public function setBody(Mailable|Notification|string $body): MultiTenantMailer
     {
-        if ($notification instanceof Notification) {
-            $message = $notification->toMail($this->getToAddresses());
+        if ($body instanceof Mailable) {
+            if($body->subject){
+                $this->notificationSubject = $body->subject;
+                $this->subject = $body->subject;
+            }
+            $this->body = $body->render();
+            $this->bodyPart = strip_tags($this->body);
+            $this->attachments = [];
+        } elseif ($body instanceof Notification) {
+            $message = $body->toMail($this->getToAddresses());
             $this->notificationSubject = $message->subject;
             $this->attachments = $message->attachments ?? [];
             $this->body = $message->markdown != null
@@ -395,7 +411,7 @@ class MultiTenantMailer
                 : $message->render();
             $this->bodyPart = strip_tags($message->render());
         } else {
-            $this->body = $notification;
+            $this->body = $body;
         }
 
         return $this;
