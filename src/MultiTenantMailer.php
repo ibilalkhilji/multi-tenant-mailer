@@ -28,6 +28,7 @@ use Swift_SmtpTransport;
  */
 class MultiTenantMailer
 {
+    protected bool $fallbackConfig = false;
     protected string $host;
     protected int $port;
     protected string $username;
@@ -35,23 +36,21 @@ class MultiTenantMailer
     protected string $encryption;
     protected array|string $fromAddresses;
     protected ?string $fromName = null;
-
     protected array|string $toAddresses;
+    protected array $ccAddresses = [];
+    protected array $bccAddresses = [];
     protected ?string $toName = null;
-
     protected string $body;
-    protected string $bodyPart;
+    protected string $bodyPart = '';
     protected array $attachments = [];
-
+    protected array $headers = [];
     protected string $contentType = 'text/html';
-    protected ?string $notificationSubject = null;
     protected ?string $subject = null;
     protected bool $shouldQueue = false;
     protected ?array $streamOptions = null;
 
     public function __construct()
     {
-        //
     }
 
     /**
@@ -71,6 +70,18 @@ class MultiTenantMailer
         $this->username = $username;
         $this->password = $password;
         $this->encryption = $encryption;
+        return $this;
+    }
+
+    /**
+     * Sets default email settings if there is no email config set.
+     *
+     * @param bool $fallbackConfig
+     * @return MultiTenantMailer
+     */
+    public function useFallbackConfig(bool $fallbackConfig): MultiTenantMailer
+    {
+        $this->fallbackConfig = $fallbackConfig;
         return $this;
     }
 
@@ -112,9 +123,11 @@ class MultiTenantMailer
      */
     public function getHost(): string
     {
-        if (!isset($this->host))
-            throw new MultiTenantMailerException('Host server is not set');
-        return $this->host;
+        if (isset($this->host)) return $this->host;
+
+        if ($this->fallbackConfig) return config('mail.mailers.smtp.host');
+
+        throw new MultiTenantMailerException('Host server is not set');
     }
 
     /**
@@ -137,9 +150,11 @@ class MultiTenantMailer
      */
     public function getPort(): int
     {
-        if (!isset($this->port))
-            throw new MultiTenantMailerException('Host port is not set');
-        return $this->port;
+        if (isset($this->port)) return $this->port;
+
+        if ($this->fallbackConfig) return config('mail.mailers.smtp.port');
+
+        throw new MultiTenantMailerException('Host port is not set');
     }
 
     /**
@@ -162,9 +177,11 @@ class MultiTenantMailer
      */
     public function getUsername(): string
     {
-        if (!isset($this->username))
-            throw new MultiTenantMailerException('Host username is not set');
-        return $this->username;
+        if (isset($this->username)) return $this->username;
+
+        if ($this->fallbackConfig) return config('mail.mailers.smtp.username');
+
+        throw new MultiTenantMailerException('Host username is not set');
     }
 
     /**
@@ -187,9 +204,11 @@ class MultiTenantMailer
      */
     public function getPassword(): string
     {
-        if (!isset($this->password))
-            throw new MultiTenantMailerException('Host password is not set');
-        return $this->password;
+        if (isset($this->password)) return $this->password;
+
+        if ($this->fallbackConfig) return config('mail.mailers.smtp.password');
+
+        throw new MultiTenantMailerException('Host password is not set');
     }
 
     /**
@@ -208,10 +227,15 @@ class MultiTenantMailer
      * Retrieves the encryption type.
      *
      * @return string The encryption type.
+     * @throws MultiTenantMailerException
      */
     public function getEncryption(): string
     {
-        return $this->encryption;
+        if (isset($this->encryption)) return $this->encryption;
+
+        if ($this->fallbackConfig) return config('mail.mailers.smtp.encryption');
+
+        throw new MultiTenantMailerException('Encryption is not set');
     }
 
     /**
@@ -232,10 +256,13 @@ class MultiTenantMailer
      * Retrieves the recipient email address.
      *
      * @return array|string The recipient email address(es).
+     * @throws MultiTenantMailerException
      */
     public function getToAddresses(): array|string
     {
-        return $this->toAddresses;
+        if (isset($this->toAddresses)) return $this->toAddresses;
+
+        throw new MultiTenantMailerException('To Addresses is not set');
     }
 
     /**
@@ -247,6 +274,51 @@ class MultiTenantMailer
     {
         return $this->toName;
     }
+
+    /**
+     * Sets the cc recipient email addresses.
+     *
+     * @param array $addresses Email address(es) of the cc recipient.
+     * @return MultiTenantMailer
+     */
+    public function setCc(array $addresses): MultiTenantMailer
+    {
+        $this->ccAddresses = $addresses;
+        return $this;
+    }
+
+    /**
+     * Retrieves the cc recipient addresses.
+     *
+     * @return array The cc recipient addresses.
+     */
+    public function getCc(): array
+    {
+        return $this->ccAddresses;
+    }
+
+    /**
+     * Sets the bcc recipient email addresses.
+     *
+     * @param array $addresses Email address(es) of the bcc recipient.
+     * @return MultiTenantMailer
+     */
+    public function setBcc(array $addresses): MultiTenantMailer
+    {
+        $this->ccAddresses = $addresses;
+        return $this;
+    }
+
+    /**
+     * Retrieves the bcc recipient addresses.
+     *
+     * @return array The cc recipient addresses.
+     */
+    public function getBcc(): array
+    {
+        return $this->bccAddresses;
+    }
+
 
     /**
      * Sets the sender email address and name.
@@ -270,9 +342,11 @@ class MultiTenantMailer
      */
     public function getFromAddresses(): array|string
     {
-        if (!isset($this->fromAddresses))
-            throw new MultiTenantMailerException('From address must be set');
-        return $this->fromAddresses;
+        if (isset($this->fromAddresses)) return $this->fromAddresses;
+
+        if ($this->fallbackConfig) return config('mail.from.address');
+
+        throw new MultiTenantMailerException('From address must be set');
     }
 
     /**
@@ -282,7 +356,9 @@ class MultiTenantMailer
      */
     public function getFromName(): ?string
     {
-        return $this->fromName;
+        if (isset($this->fromName)) return $this->fromName;
+
+        return config('mail.mailers.smtp.host');
     }
 
     /**
@@ -294,7 +370,6 @@ class MultiTenantMailer
     public function setSubject(string $subject): MultiTenantMailer
     {
         $this->subject = $subject;
-        $this->notificationSubject = $subject;
         return $this;
     }
 
@@ -306,11 +381,9 @@ class MultiTenantMailer
      */
     private function getSubject(): string
     {
-        if ($this->subject == null && $this->notificationSubject == null) {
-            throw new MultiTenantMailerException('Subject not set');
-        }
+        if ($this->subject != null) return $this->subject;
 
-        return $this->subject ?? $this->notificationSubject;
+        throw new MultiTenantMailerException('Subject not set');
     }
 
     /**
@@ -396,26 +469,40 @@ class MultiTenantMailer
     {
         if ($body instanceof Mailable) {
             if (method_exists($body, 'getSubject') && $body->getSubject()) {
-                $this->notificationSubject = $body->getSubject();
                 $this->subject = $body->getSubject();
             } else if (method_exists($body, 'envelope') && $body->envelope()?->subject) {
-                $this->notificationSubject = $body->envelope()->subject;
                 $this->subject = $body->envelope()->subject;
             } elseif ($body->subject) {
-                $this->notificationSubject = $body->subject;
                 $this->subject = $body->subject;
             }
+
+            if (method_exists($body, 'headers')) {
+                if ($body->headers()->messageId) {
+                    $this->headers = array_merge($this->headers, ['Message-Id' => $body->headers()->messageId]);
+                }
+
+                if ($body->headers()->references) {
+                    $references = [];
+                    foreach ($body->headers()->references as $key => $value)
+                        $references[$key] = $value;
+                    $this->headers = array_merge($this->headers, $references);
+                }
+
+                if ($body->headers()->text) {
+                    $texts = [];
+                    foreach ($body->headers()->text as $key => $value)
+                        $texts[$key] = $value;
+                    $this->headers = array_merge($this->headers, $texts);
+                }
+            }
+
             $this->body = $body->render();
-            $this->bodyPart = strip_tags($this->body);
-            $this->attachments = [];
         } elseif ($body instanceof Notification) {
             $message = $body->toMail($this->getToAddresses());
-            $this->notificationSubject = $message->subject;
-            $this->attachments = $message->attachments ?? [];
+            if ($message->attachments) $this->attachments = $message->attachments;
             $this->body = $message->markdown != null
                 ? app()->make(Markdown::class)->render($message->markdown, $message->data())
                 : $message->render();
-            $this->bodyPart = strip_tags($message->render());
         } else {
             $this->body = $body;
         }
@@ -440,10 +527,12 @@ class MultiTenantMailer
      * Sets the plain-text part of the email body.
      *
      * @param string $bodyPart The plain-text part of the email.
+     * @return MultiTenantMailer Returns the current instance for method chaining.
      */
-    public function setBodyPart(string $bodyPart): void
+    public function setBodyPart(string $bodyPart): MultiTenantMailer
     {
         $this->bodyPart = $bodyPart;
+        return $this;
     }
 
     /**
@@ -477,6 +566,29 @@ class MultiTenantMailer
     }
 
     /**
+     * Get the headers for the mailer.
+     *
+     * @return array An array of headers currently set for the mailer.
+     */
+    public function getHeaders(): array
+    {
+        return $this->headers;
+    }
+
+    /**
+     * Set the headers for the mailer.
+     *
+     * @param array $headers An array of headers to be set for the mailer.
+     *
+     * @return MultiTenantMailer
+     */
+    public function setHeaders(array $headers): MultiTenantMailer
+    {
+        $this->headers = $headers;
+        return $this;
+    }
+
+    /**
      * Sends the email or queues it if required.
      *
      * @return int The number of recipients who were accepted for delivery.
@@ -486,6 +598,15 @@ class MultiTenantMailer
     {
         // Create a message
         $message = $this->getMessage();
+
+        // Access the headers
+        $headers = $message->getHeaders();
+
+        // Update the headers
+        foreach ($this->getHeaders() as $key => $header) {
+            if ($headers->has($key)) $headers->remove($key);
+            $headers->addTextHeader($key, $header);
+        }
 
         foreach ($this->getAttachments() as $attachment) {
             $message->attach(Swift_Attachment::fromPath($attachment['file']));
@@ -498,7 +619,7 @@ class MultiTenantMailer
         }
         $response = $this->getMailer()->send($message);
 
-        if ($response) MailSuccess::dispatch();
+        if ($response) MailSuccess::dispatch($message->getId());
         else            MailFailed::dispatch();
 
         return $response;
@@ -543,6 +664,8 @@ class MultiTenantMailer
         return (new Swift_Message($this->getSubject()))
             ->setFrom($this->getFromAddresses(), $this->getFromName())
             ->setTo($this->getToAddresses(), $this->getToName())
+            ->setCc($this->getCc())
+            ->setBcc($this->getBcc())
             ->setContentType($this->getContentType())
             ->setBody($this->getBody())
             ->addPart($this->getBodyPart(), 'text/plain');

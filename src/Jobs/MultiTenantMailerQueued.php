@@ -29,7 +29,7 @@ class MultiTenantMailerQueued implements ShouldQueue
     {
         try {
             $this->mailer->send($this->message);
-            MailSuccess::dispatch();
+            MailSuccess::dispatch($this->message->getId());
         } catch (Exception $e) {
             MailFailed::dispatch($e->getMessage());
         }

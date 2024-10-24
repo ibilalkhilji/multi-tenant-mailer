@@ -6,7 +6,6 @@
 ![GitHub contributors](https://img.shields.io/github/contributors/ibilalkhilji/multi-tenant-mailer)
 ![GitHub Repo stars](https://img.shields.io/github/stars/ibilalkhilji/multi-tenant-mailer)
 
-
 The `MultiTenantMailer` is a powerful and flexible email-sending library designed for multi-tenant applications. It simplifies the process
 of configuring and sending emails while supporting multiple tenants with different settings.
 
@@ -169,6 +168,10 @@ MultiTenantMailerSettings::setHost($host)
 | `setTo(array\|string $addresses, string $name = null): MultiTenantMailer`                                  | Sets the recipient's email address(es) and optional name.          |
 | `getToAddresses(): array\|string`                                                                          | Retrieves the recipient's email address(es).                       |
 | `getToName(): ?string`                                                                                     | Retrieves the name of the recipient.                               |
+| `setCc(array $addresses): MultiTenantMailer`                                                               | Sets the cc recipient's email address(es) .                        |
+| `getCcAddresses(): array`                                                                                  | Retrieves the cc recipient's email address(es).                    |
+| `setBcc(array $addresses): MultiTenantMailer`                                                              | Sets the bcc recipient's email address(es) .                       |
+| `getBccAddresses(): array`                                                                                 | Retrieves the bcc recipient's email address(es).                   |
 | `setFrom(array\|string $addresses, string $name = null): MultiTenantMailer`                                | Sets the sender's email address(es) and optional name.             |
 | `getFromAddresses(): array\|string`                                                                        | Retrieves the sender's email address(es).                          |
 | `getFromName(): ?string`                                                                                   | Retrieves the name of the sender.                                  |
@@ -176,12 +179,17 @@ MultiTenantMailerSettings::setHost($host)
 | `setContentType(string $contentType = 'text/html'): MultiTenantMailer`                                     | Sets the content type (e.g., 'text/html').                         |
 | `shouldQueue(): MultiTenantMailer`                                                                         | Marks the email to be queued for sending.                          |
 | `isShouldQueue(): bool`                                                                                    | Checks if the email should be queued.                              |
+| `getStreamOptions(): null\|array`                                                                          | Get the stream options.                                            |
+| `setStreamOptions(): null\|array`                                                                          | Set the stream options.                                            |
 | `setBody(Notification\|string $notification): MultiTenantMailer`                                           | Sets the email body, either from a notification or a plain string. |
 | `getBody(): string`                                                                                        | Retrieves the email body.                                          |
 | `setBodyPart(string $bodyPart): void`                                                                      | Sets the plain text body part of the email.                        |
 | `getBodyPart(): string`                                                                                    | Retrieves the plain text body part of the email.                   |
 | `setAttachments(array $attachments): void`                                                                 | Sets attachments for the email.                                    |
 | `getAttachments(): array`                                                                                  | Retrieves the attachments for the email.                           |
+| `setHeaders(array $headers): void`                                                                         | Sets headers for the email.                                        |
+| `getHeaders(): array`                                                                                      | Retrieves the headers for the email.                               |
+| `useFallbackConfig(): MultiTenantMailer`                                                                   | Sets default email settings if there is no email config set.       |
 | `send(): int`                                                                                              | Sends the email and returns the number of emails sent.             |
 
 ### Class MultiTenantMailerSettings
