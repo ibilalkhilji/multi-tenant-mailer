@@ -499,6 +499,7 @@ class MultiTenantMailer
             $this->body = $body->render();
         } elseif ($body instanceof Notification) {
             $message = $body->toMail($this->getToAddresses());
+            $this->subject = $message->subject;
             if ($message->attachments) $this->attachments = $message->attachments;
             $this->body = $message->markdown != null
                 ? app()->make(Markdown::class)->render($message->markdown, $message->data())
