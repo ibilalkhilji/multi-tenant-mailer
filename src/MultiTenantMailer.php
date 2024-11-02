@@ -6,6 +6,7 @@ use Exception;
 use Illuminate\Contracts\Container\BindingResolutionException;
 use Illuminate\Mail\Mailable;
 use Illuminate\Mail\Markdown;
+use Illuminate\Notifications\AnonymousNotifiable;
 use Illuminate\Notifications\Notification;
 use Khaleejinfotech\MultiTenantMailer\Contracts\MultiTenantMailerSettings;
 use Khaleejinfotech\MultiTenantMailer\Events\MailFailed;
@@ -245,9 +246,9 @@ class MultiTenantMailer
      * @param string|null $name Name of the recipient (optional).
      * @return MultiTenantMailer
      */
-    public function setTo(array|string $addresses, string $name = null): MultiTenantMailer
+    public function setTo(array|string|AnonymousNotifiable $addresses, string $name = null): MultiTenantMailer
     {
-        $this->toAddresses = $addresses;
+        $this->toAddresses = $addresses->routes['tenant_mailer'] ?? $addresses;
         $this->toName = $name;
         return $this;
     }

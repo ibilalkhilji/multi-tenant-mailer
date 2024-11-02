@@ -3,7 +3,10 @@
 namespace Khaleejinfotech\MultiTenantMailer;
 
 use Illuminate\Foundation\Console\AboutCommand;
+use Illuminate\Notifications\ChannelManager;
+use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\ServiceProvider;
+use Khaleejinfotech\MultiTenantMailer\Channels\MultiTenantMailerChannel;
 use Khaleejinfotech\MultiTenantMailer\Contracts\MultiTenantMailerSettings;
 
 class MultiTenantMailerServiceProvider extends ServiceProvider
@@ -12,7 +15,7 @@ class MultiTenantMailerServiceProvider extends ServiceProvider
     public function boot(): void
     {
         AboutCommand::add('Multi Tenant Mailer', fn() => [
-            'Version' => '1.0.0',
+            'Version' => '1.0.8',
             'Developed by' => 'KHALEEJ Infotech',
             'Developer Email' => 'contact@khaleejinfotech.com',
             'Developer Website' => 'https://khaleejinfotech.com',
@@ -35,6 +38,10 @@ class MultiTenantMailerServiceProvider extends ServiceProvider
 
         $this->app->singleton(MultiTenantMailerSettings::class, function () {
             return new MultiTenantMailerSettings;
+        });
+
+        Notification::resolved(function (ChannelManager $service) {
+            $service->extend('tenant_mailer', fn($app) => $app->make(MultiTenantMailerChannel::class));
         });
     }
 }
