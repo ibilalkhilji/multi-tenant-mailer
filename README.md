@@ -188,7 +188,7 @@ job-handling
 requirements.
 
 ```php
-->setOnQueue('emails'); 
+->onQueue('emails'); 
 ```
 
 ## Events
