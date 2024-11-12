@@ -2,6 +2,7 @@
 
 namespace Khaleejinfotech\MultiTenantMailer;
 
+use BackedEnum;
 use Exception;
 use Illuminate\Contracts\Container\BindingResolutionException;
 use Illuminate\Mail\Mailable;
@@ -48,6 +49,7 @@ class MultiTenantMailer
     protected string $contentType = 'text/html';
     protected ?string $subject = null;
     protected bool $shouldQueue = false;
+    protected null|string|BackedEnum $onQueue = null;
     protected ?array $streamOptions = null;
 
     public function __construct()
@@ -431,6 +433,30 @@ class MultiTenantMailer
     }
 
     /**
+     * Retrieves the job queue name.
+     *
+     * @return BackedEnum|string|null Returns the queue name or identifier if set,
+     *                                or null if no specific queue is assigned.
+     */
+    public function getQueue(): BackedEnum|string|null
+    {
+        return $this->onQueue;
+    }
+
+    /**
+     * Sets the job queue name.
+     *
+     * @param BackedEnum|string|null $onQueue The queue name or identifier to be set,
+     *                                        or null to remove any specific queue assignment.
+     * @return MultiTenantMailer Returns the instance of MultiTenantMailer for method chaining.
+     */
+    public function onQueue(BackedEnum|string|null $onQueue = 'default'): MultiTenantMailer
+    {
+        $this->onQueue = $onQueue;
+        return $this;
+    }
+
+    /**
      * Get the stream options.
      *
      * @return array|null The stream options, or null if not set.
@@ -614,9 +640,9 @@ class MultiTenantMailer
             $message->attach(Swift_Attachment::fromPath($attachment['file']));
         }
 
-        if ($this->shouldQueue) {
+        if ($this->isShouldQueue()) {
             $queueClass = $this->getQueueJobClass();
-            dispatch(new $queueClass($this->getMailer(), $message));
+            dispatch((new $queueClass($this->getMailer(), $message))->onQueue($this->getQueue()));
             return 1;
         }
         $response = $this->getMailer()->send($message);

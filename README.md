@@ -176,6 +176,21 @@ the `setBody()` can have either Notification/Mailable or the self mailable metho
 ->setBody($this->toMail($notifiable)->render()); 
 ```
 
+## Queues
+
+The `MultiTenantMailer` class provides the ability to define specific queues for processing emails, giving you control over how and when
+emails are queued.
+
+### Setting the Queue
+
+You can set a queue name or identifier using the `setOnQueue` method. This allows you to specify a queue that suits your system’s
+job-handling
+requirements.
+
+```php
+->setOnQueue('emails'); 
+```
+
 ## Events
 
 The library includes the following events:
@@ -216,6 +231,8 @@ The library includes the following events:
 | `setContentType(string $contentType = 'text/html')`                                     | Sets the content type (e.g., 'text/html').                         |
 | `shouldQueue()`                                                                         | Marks the email to be queued for sending.                          |
 | `isShouldQueue(): bool`                                                                 | Checks if the email should be queued.                              |
+| `onQueue(BackedEnum\|string\|null $onQueue = 'default')`                                | Sets the job queue name.                                           |
+| `getQueue(): BackedEnum\|string\|null $onQueue`                                         | Retrieves the job queue name.                                      |
 | `getStreamOptions(): null\|array`                                                       | Get the stream options.                                            |
 | `setStreamOptions(): null\|array`                                                       | Set the stream options.                                            |
 | `setBody(Notification\|string $notification)`                                           | Sets the email body, either from a notification or a plain string. |
