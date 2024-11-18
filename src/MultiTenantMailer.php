@@ -446,11 +446,11 @@ class MultiTenantMailer
     /**
      * Sets the job queue name.
      *
-     * @param BackedEnum|string|null $onQueue The queue name or identifier to be set,
+     * @param null|BackedEnum|string $onQueue The queue name or identifier to be set,
      *                                        or null to remove any specific queue assignment.
      * @return MultiTenantMailer Returns the instance of MultiTenantMailer for method chaining.
      */
-    public function onQueue(BackedEnum|string|null $onQueue = 'default'): MultiTenantMailer
+    public function onQueue(null|BackedEnum|string $onQueue = 'default'): MultiTenantMailer
     {
         $this->onQueue = $onQueue;
         return $this;
