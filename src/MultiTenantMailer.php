@@ -650,6 +650,7 @@ class MultiTenantMailer
      */
     public function send(): int
     {
+        $response = 0;
         try {
             // Create a message
             $message = $this->getMessage();
@@ -675,14 +676,20 @@ class MultiTenantMailer
 
             $response = $this->getMailer()->send($message);
 
-            if ($response) MailSuccess::dispatch($message->getId());
-            else            MailFailed::dispatch();
-
-            return $response;
+            if ($response > 0)
+                MailSuccess::dispatch($message->getId());
+            else
+                MailFailed::dispatch();
+        } catch (Exception$exception) {
+            MailFailed::dispatch();
+            logger()->error('Mail sending failed: ' . $exception->getMessage());
+            $response = 0;
         } finally {
             if ($this->shouldStopTransport() && $this->transport != null)
                 $this->getTransport()->stop();
         }
+
+        return $response;
     }
 
     /**
@@ -712,7 +719,8 @@ class MultiTenantMailer
      */
     private function getMailer(): Swift_Mailer
     {
-        if ($this->mailer == null) $this->mailer = new Swift_Mailer($this->getTransport());
+        if ($this->mailer == null)
+            $this->mailer = new Swift_Mailer($this->getTransport());
         return $this->mailer;
     }
 
