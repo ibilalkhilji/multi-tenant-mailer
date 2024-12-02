@@ -244,6 +244,8 @@ The library includes the following events:
 | `setHeaders(array $headers): void`                                                      | Sets headers for the email.                                        |
 | `getHeaders(): array`                                                                   | Retrieves the headers for the email.                               |
 | `useFallbackConfig()`                                                                   | Sets default email settings if there is no email config set.       |
+| `stopTransport(bool $b)`                                                                | Define whether to keep transport running or stopped..              |
+| `shouldStopTransport(): bool`                                                           | To stop the transport.                                             |
 | `send(): int`                                                                           | Sends the email and returns the number of emails sent.             |
 
 ### Class MultiTenantMailerSettings

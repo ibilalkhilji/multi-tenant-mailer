@@ -30,6 +30,9 @@ use Swift_SmtpTransport;
  */
 class MultiTenantMailer
 {
+    protected ?Swift_Mailer $mailer = null;
+    protected ?Swift_SmtpTransport $transport = null;
+
     protected bool $fallbackConfig = false;
     protected string $host;
     protected int $port;
@@ -51,6 +54,7 @@ class MultiTenantMailer
     protected bool $shouldQueue = false;
     protected null|string|BackedEnum $onQueue = null;
     protected ?array $streamOptions = null;
+    protected bool $shouldStopTransport = true;
 
     public function __construct()
     {
@@ -617,6 +621,28 @@ class MultiTenantMailer
     }
 
     /**
+     * Define whether to keep transport running or stopped.
+     *
+     * @param bool $b
+     * @return MultiTenantMailer
+     */
+    public function stopTransport(bool $b = true): MultiTenantMailer
+    {
+        $this->shouldStopTransport = $b;
+        return $this;
+    }
+
+    /**
+     * To stop the transport
+     *
+     * @return bool
+     */
+    public function shouldStopTransport(): bool
+    {
+        return $this->shouldStopTransport;
+    }
+
+    /**
      * Sends the email or queues it if required.
      *
      * @return int The number of recipients who were accepted for delivery.
@@ -624,33 +650,39 @@ class MultiTenantMailer
      */
     public function send(): int
     {
-        // Create a message
-        $message = $this->getMessage();
+        try {
+            // Create a message
+            $message = $this->getMessage();
 
-        // Access the headers
-        $headers = $message->getHeaders();
+            // Access the headers
+            $headers = $message->getHeaders();
 
-        // Update the headers
-        foreach ($this->getHeaders() as $key => $header) {
-            if ($headers->has($key)) $headers->remove($key);
-            $headers->addTextHeader($key, $header);
+            // Update the headers
+            foreach ($this->getHeaders() as $key => $header) {
+                if ($headers->has($key)) $headers->remove($key);
+                $headers->addTextHeader($key, $header);
+            }
+
+            foreach ($this->getAttachments() as $attachment) {
+                $message->attach(Swift_Attachment::fromPath($attachment['file']));
+            }
+
+            if ($this->isShouldQueue()) {
+                $queueClass = $this->getQueueJobClass();
+                dispatch((new $queueClass($this->getMailer(), $message))->onQueue($this->getQueue()));
+                return 1;
+            }
+
+            $response = $this->getMailer()->send($message);
+
+            if ($response) MailSuccess::dispatch($message->getId());
+            else            MailFailed::dispatch();
+
+            return $response;
+        } finally {
+            if ($this->shouldStopTransport() && $this->transport != null)
+                $this->getTransport()->stop();
         }
-
-        foreach ($this->getAttachments() as $attachment) {
-            $message->attach(Swift_Attachment::fromPath($attachment['file']));
-        }
-
-        if ($this->isShouldQueue()) {
-            $queueClass = $this->getQueueJobClass();
-            dispatch((new $queueClass($this->getMailer(), $message))->onQueue($this->getQueue()));
-            return 1;
-        }
-        $response = $this->getMailer()->send($message);
-
-        if ($response) MailSuccess::dispatch($message->getId());
-        else            MailFailed::dispatch();
-
-        return $response;
     }
 
     /**
@@ -661,13 +693,15 @@ class MultiTenantMailer
      */
     private function getTransport(): Swift_SmtpTransport
     {
-        $transport = new Swift_SmtpTransport($this->getHost(), $this->getPort());
-        $transport->setUsername($this->getUsername());
-        $transport->setPassword($this->getPassword());
-        $transport->setEncryption($this->getEncryption());
-        if ($this->getStreamOptions() != null)
-            $transport->setStreamOptions($this->getStreamOptions());
-        return $transport;
+        if ($this->transport == null) {
+            $this->transport = new Swift_SmtpTransport($this->getHost(), $this->getPort());
+            $this->transport->setUsername($this->getUsername());
+            $this->transport->setPassword($this->getPassword());
+            $this->transport->setEncryption($this->getEncryption());
+            if ($this->getStreamOptions() != null)
+                $this->transport->setStreamOptions($this->getStreamOptions());
+        }
+        return $this->transport;
     }
 
     /**
@@ -678,7 +712,8 @@ class MultiTenantMailer
      */
     private function getMailer(): Swift_Mailer
     {
-        return new Swift_Mailer($this->getTransport());
+        if ($this->mailer == null) $this->mailer = new Swift_Mailer($this->getTransport());
+        return $this->mailer;
     }
 
     /**
