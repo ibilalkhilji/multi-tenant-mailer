@@ -237,15 +237,17 @@ The library includes the following events:
 | `setStreamOptions(): null\|array`                                                       | Set the stream options.                                            |
 | `setBody(Notification\|string $notification)`                                           | Sets the email body, either from a notification or a plain string. |
 | `getBody(): string`                                                                     | Retrieves the email body.                                          |
-| `setBodyPart(string $bodyPart): void`                                                   | Sets the plain text body part of the email.                        |
+| `setBodyPart(string $bodyPart)`                                                         | Sets the plain text body part of the email.                        |
 | `getBodyPart(): string`                                                                 | Retrieves the plain text body part of the email.                   |
-| `setAttachments(array $attachments): void`                                              | Sets attachments for the email.                                    |
+| `setAttachments(array $attachments)`                                                    | Sets attachments for the email.                                    |
 | `getAttachments(): array`                                                               | Retrieves the attachments for the email.                           |
-| `setHeaders(array $headers): void`                                                      | Sets headers for the email.                                        |
+| `setHeaders(array $headers)`                                                            | Sets headers for the email.                                        |
 | `getHeaders(): array`                                                                   | Retrieves the headers for the email.                               |
 | `useFallbackConfig()`                                                                   | Sets default email settings if there is no email config set.       |
 | `stopTransport(bool $b)`                                                                | Define whether to keep transport running or stopped..              |
 | `shouldStopTransport(): bool`                                                           | To stop the transport.                                             |
+| `setExtras(array\|string $key, mixed $value)`                                           | Defines extra data to be used by the mailer.                       |
+| `getExtras(): array`                                                                    | Returns the array of extra data.                                   |
 | `send(): int`                                                                           | Sends the email and returns the number of emails sent.             |
 
 ### Class MultiTenantMailerSettings

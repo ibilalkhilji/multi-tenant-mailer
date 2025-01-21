@@ -56,6 +56,8 @@ class MultiTenantMailer
     protected ?array $streamOptions = null;
     protected bool $shouldStopTransport = true;
 
+    protected array $extras = [];
+
     public function __construct()
     {
     }
@@ -643,6 +645,34 @@ class MultiTenantMailer
     }
 
     /**
+     * Defines extra data to be used by the mailer
+     *
+     * @param array|string $key
+     * @param mixed $value
+     * @return MultiTenantMailer
+     */
+    public function setExtras(array|string $key, mixed $value = null): MultiTenantMailer
+    {
+        if (is_array($key)) {
+            $this->extras = array_merge($this->extras, $key);
+        } else {
+            $this->extras[$key] = $value;
+        }
+
+        return $this;
+    }
+
+    /**
+     * Returns the array of extra data
+     *
+     * @return array
+     */
+    public function getExtras(): array
+    {
+        return $this->extras;
+    }
+
+    /**
      * Sends the email or queues it if required.
      *
      * @return int The number of recipients who were accepted for delivery.
@@ -670,7 +700,7 @@ class MultiTenantMailer
 
             if ($this->isShouldQueue()) {
                 $queueClass = $this->getQueueJobClass();
-                dispatch((new $queueClass($this->getMailer(), $message))->onQueue($this->getQueue()));
+                dispatch((new $queueClass($this, $this->getMailer(), $message))->onQueue($this->getQueue()));
                 return 1;
             }
 
@@ -679,9 +709,9 @@ class MultiTenantMailer
             if ($response > 0)
                 MailSuccess::dispatch($message->getId());
             else
-                MailFailed::dispatch();
+                MailFailed::dispatch('', null, $this);
         } catch (Exception$exception) {
-            MailFailed::dispatch();
+            MailFailed::dispatch($exception->getMessage(), $exception, $this);
             logger()->error('Mail sending failed: ' . $exception->getMessage());
             $response = 0;
         } finally {

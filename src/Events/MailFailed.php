@@ -2,11 +2,13 @@
 
 namespace Khaleejinfotech\MultiTenantMailer\Events;
 
+use Exception;
 use Illuminate\Broadcasting\Channel;
 use Illuminate\Broadcasting\InteractsWithSockets;
 use Illuminate\Broadcasting\PrivateChannel;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
+use Khaleejinfotech\MultiTenantMailer\MultiTenantMailer;
 
 
 class MailFailed
@@ -18,7 +20,7 @@ class MailFailed
      *
      * @return void
      */
-    public function __construct(public $message = '')
+    public function __construct(public $message = '', public ?Exception $exception = null, public ?MultiTenantMailer $mailer = null)
     {
 
     }

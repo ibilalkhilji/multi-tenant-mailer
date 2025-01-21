@@ -7,6 +7,7 @@ use Illuminate\Broadcasting\InteractsWithSockets;
 use Illuminate\Broadcasting\PrivateChannel;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
+use Khaleejinfotech\MultiTenantMailer\MultiTenantMailer;
 
 
 class MailSuccess
@@ -18,7 +19,7 @@ class MailSuccess
      *
      * @return void
      */
-    public function __construct(public string $messageId)
+    public function __construct(public string $messageId, public ?MultiTenantMailer $instance = null)
     {
     }
 
