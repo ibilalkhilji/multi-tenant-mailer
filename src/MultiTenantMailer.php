@@ -700,6 +700,7 @@ class MultiTenantMailer
 
             if ($this->isShouldQueue()) {
                 $queueClass = $this->getQueueJobClass();
+                // new dispatch
                 dispatch((new $queueClass($this, $this->getMailer(), $message))->onQueue($this->getQueue()));
                 return 1;
             }
